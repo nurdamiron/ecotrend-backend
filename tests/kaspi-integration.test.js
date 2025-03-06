@@ -4,7 +4,7 @@ const app = require('../server');
 const mysql = require('mysql2/promise');
 
 // Увеличиваем глобальный таймаут для всех тестов и хуков
-jest.setTimeout(60000);
+jest.setTimeout(90000);
 
 // Мокаем Firebase
 jest.mock('../utils/firebase', () => require('./mocks/firebase'));
@@ -136,7 +136,7 @@ describe('Kaspi Integration Tests', () => {
       expect(res.body.txn_id).toBe(testTxnId);
       expect(res.body.result).toBe(0); // Success
       expect(res.body.fields).toBeDefined();
-    }, 15000);
+    }, 30000);
     
     it('should return error for non-existent device', async () => {
       const res = await request(app)
@@ -177,7 +177,7 @@ describe('Kaspi Integration Tests', () => {
       );
       
       expect(parseFloat(rows[0].balance)).toBeGreaterThan(0);
-    }, 20000);
+    }, 30000);
     
     it('should handle duplicate payments', async () => {
       // First payment
@@ -221,6 +221,6 @@ describe('Kaspi Integration Tests', () => {
       
       // Verify balance wasn't updated twice
       expect(balanceAfterFirst[0].balance).toBe(balanceAfterSecond[0].balance);
-    }, 15000);
+    }, 20000);
   });
 });

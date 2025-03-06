@@ -132,11 +132,14 @@ exports.processPayment = async (req, res) => {
       
       if (existingTransaction) {
         await connection.commit();
+
+        // Преобразуем amount из строки или объекта в число перед вызовом toFixed
+        const amount = parseFloat(existingTransaction.amount);
         
         return res.status(200).json({
           txn_id,
           prv_txn: existingTransaction.prv_txn_id,
-          sum: existingTransaction.amount.toFixed(2),
+          sum: amount.toFixed(2), // Теперь это работает правильно
           result: existingTransaction.status,
           comment: "Transaction already processed"
         });
