@@ -3,6 +3,9 @@ const request = require('supertest');
 const app = require('../server');
 const mysql = require('mysql2/promise');
 
+// Увеличиваем глобальный таймаут для всех тестов и хуков
+jest.setTimeout(60000);
+
 // Мокаем Firebase
 jest.mock('../utils/firebase', () => require('./mocks/firebase'));
 
@@ -47,6 +50,21 @@ const waitForDatabase = async (maxRetries = 10, retryInterval = 3000) => {
   }
 };
 
+// Функция для очистки тестовых данных
+async function cleanupTestData(pool, deviceId) {
+  try {
+    // Очищаем все предыдущие тестовые данные
+    await pool.execute('DELETE FROM chemicals WHERE device_id = ?', [deviceId]);
+    await pool.execute('DELETE FROM balances WHERE device_id = ?', [deviceId]);
+    await pool.execute('DELETE FROM transactions WHERE device_id = ?', [deviceId]);
+    await pool.execute('DELETE FROM devices WHERE device_id = ?', [deviceId]);
+    console.log('Previous test data cleaned up successfully');
+  } catch (error) {
+    console.warn('Warning during cleanup:', error.message);
+    // Не выбрасываем ошибку, чтобы тесты могли продолжаться
+  }
+}
+
 describe('Kaspi Integration Tests', () => {
   let pool;
   // Test device and transaction data
@@ -54,10 +72,11 @@ describe('Kaspi Integration Tests', () => {
   const testTxnId = 'TEST-TXN-' + Date.now();
   
   beforeAll(async () => {
-    jest.setTimeout(60000); // Увеличиваем таймаут до 60 секунд для тестов
-    
     // Ожидаем, пока база данных станет доступной
     pool = await waitForDatabase();
+    
+    // Сначала очищаем старые тестовые данные
+    await cleanupTestData(pool, testDeviceId);
     
     // Create test device in database
     try {
@@ -84,15 +103,12 @@ describe('Kaspi Integration Tests', () => {
       console.error('Error setting up test data:', error.message);
       throw error;
     }
-  });
+  }, 60000); // Увеличиваем таймаут для beforeAll
   
   afterAll(async () => {
     try {
       // Clean up test data
-      await pool.execute('DELETE FROM chemicals WHERE device_id = ?', [testDeviceId]);
-      await pool.execute('DELETE FROM balances WHERE device_id = ?', [testDeviceId]);
-      await pool.execute('DELETE FROM transactions WHERE device_id = ?', [testDeviceId]);
-      await pool.execute('DELETE FROM devices WHERE device_id = ?', [testDeviceId]);
+      await cleanupTestData(pool, testDeviceId);
       console.log('Test data cleaned up successfully');
     } catch (error) {
       console.error('Error cleaning up test data:', error.message);
@@ -103,14 +119,10 @@ describe('Kaspi Integration Tests', () => {
         console.log('Database connection pool closed');
       }
     }
-  });
+  }, 60000); // Увеличиваем таймаут для afterAll
   
   describe('Check Endpoint', () => {
-    // Увеличиваем тайм-аут для каждого теста
     it('should return success for valid device', async () => {
-      // Устанавливаем тайм-аут 15 секунд для этого теста
-      jest.setTimeout(15000);
-      
       const res = await request(app)
         .get('/api/kaspi/check')
         .query({
@@ -124,12 +136,9 @@ describe('Kaspi Integration Tests', () => {
       expect(res.body.txn_id).toBe(testTxnId);
       expect(res.body.result).toBe(0); // Success
       expect(res.body.fields).toBeDefined();
-    }, 15000); // Устанавливаем тайм-аут 15 секунд как второй параметр
+    }, 15000);
     
     it('should return error for non-existent device', async () => {
-      // Устанавливаем тайм-аут 15 секунд для этого теста
-      jest.setTimeout(15000);
-      
       const res = await request(app)
         .get('/api/kaspi/check')
         .query({
@@ -141,14 +150,11 @@ describe('Kaspi Integration Tests', () => {
       
       expect(res.status).toBe(200);
       expect(res.body.result).toBe(1); // Device not found
-    }, 15000); // Устанавливаем тайм-аут 15 секунд как второй параметр
+    }, 15000);
   });
   
   describe('Pay Endpoint', () => {
     it('should process payment successfully', async () => {
-      // Устанавливаем тайм-аут 20 секунд для этого теста
-      jest.setTimeout(20000);
-      
       const res = await request(app)
         .get('/api/kaspi/pay')
         .query({
@@ -171,12 +177,9 @@ describe('Kaspi Integration Tests', () => {
       );
       
       expect(parseFloat(rows[0].balance)).toBeGreaterThan(0);
-    }, 20000); // Устанавливаем тайм-аут 20 секунд как второй параметр
+    }, 20000);
     
     it('should handle duplicate payments', async () => {
-      // Устанавливаем тайм-аут 15 секунд для этого теста
-      jest.setTimeout(15000);
-      
       // First payment
       const uniqueTxnId = testTxnId + '2'; // Уникальный ID для этого теста
       
@@ -218,6 +221,6 @@ describe('Kaspi Integration Tests', () => {
       
       // Verify balance wasn't updated twice
       expect(balanceAfterFirst[0].balance).toBe(balanceAfterSecond[0].balance);
-    }, 15000); // Устанавливаем тайм-аут 15 секунд как второй параметр
+    }, 15000);
   });
 });
