@@ -1,7 +1,13 @@
--- Create test tables for the ecotrend_test database
+-- init-test-db.sql
+CREATE DATABASE IF NOT EXISTS ecotrend_test;
 USE ecotrend_test;
 
--- Create devices table
+-- Allow root user to connect from any host
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY 'nurda0101';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+-- Create tables
 CREATE TABLE IF NOT EXISTS devices (
   id INT AUTO_INCREMENT PRIMARY KEY,
   device_id VARCHAR(100) NOT NULL UNIQUE,
@@ -11,17 +17,14 @@ CREATE TABLE IF NOT EXISTS devices (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create balances table
 CREATE TABLE IF NOT EXISTS balances (
   id INT AUTO_INCREMENT PRIMARY KEY,
   device_id VARCHAR(100) NOT NULL UNIQUE,
   balance DECIMAL(10, 2) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (device_id) REFERENCES devices(device_id) ON DELETE CASCADE
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create chemicals table
 CREATE TABLE IF NOT EXISTS chemicals (
   id INT AUTO_INCREMENT PRIMARY KEY,
   device_id VARCHAR(100) NOT NULL,
@@ -33,11 +36,9 @@ CREATE TABLE IF NOT EXISTS chemicals (
   expiration_date DATE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY unique_device_tank (device_id, tank_number),
-  FOREIGN KEY (device_id) REFERENCES devices(device_id) ON DELETE CASCADE
+  UNIQUE KEY unique_device_tank (device_id, tank_number)
 );
 
--- Create transactions table
 CREATE TABLE IF NOT EXISTS transactions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   txn_id VARCHAR(100) NOT NULL UNIQUE,
@@ -45,11 +46,9 @@ CREATE TABLE IF NOT EXISTS transactions (
   device_id VARCHAR(100) NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
   status INT NOT NULL DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (device_id) REFERENCES devices(device_id) ON DELETE CASCADE
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create dispensing_operations table
 CREATE TABLE IF NOT EXISTS dispensing_operations (
   id INT AUTO_INCREMENT PRIMARY KEY,
   device_id VARCHAR(100) NOT NULL,
@@ -62,11 +61,5 @@ CREATE TABLE IF NOT EXISTS dispensing_operations (
   expiration_date DATE,
   batch_number VARCHAR(50),
   receipt_number VARCHAR(100),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (device_id) REFERENCES devices(device_id) ON DELETE CASCADE,
-  FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE SET NULL
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Grant proper permissions for the test user
-GRANT ALL PRIVILEGES ON ecotrend_test.* TO 'ecotrend_user'@'%';
-FLUSH PRIVILEGES;

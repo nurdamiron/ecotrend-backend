@@ -7,8 +7,5 @@ RUN npm install
 
 COPY . .
 
-# Make the jest executable (and all node_modules binaries) executable
-RUN chmod +x node_modules/.bin/*
-
-# OR run jest with npx
-CMD ["npx", "jest"]
+# Ensure MySQL is ready before running tests
+CMD ["sh", "-c", "sleep 20 && NODE_ENV=test npm test -- --forceExit"]

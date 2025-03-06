@@ -1,7 +1,19 @@
 // tests/kaspi-integration.test.js
 const request = require('supertest');
 const app = require('../server');
-const { pool } = require('../config/database');
+const mysql = require('mysql2/promise');
+
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'nurda0101',
+  database: process.env.DB_NAME || 'ecotrend_test',
+  waitForConnections: true,
+  connectionLimit: 10
+});
+
 
 describe('Kaspi Integration Tests', () => {
   // Test device and transaction data
