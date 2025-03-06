@@ -2,8 +2,11 @@
 CREATE DATABASE IF NOT EXISTS ecotrend_test;
 USE ecotrend_test;
 
--- Allow root to connect from anywhere
-CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY 'nurda0101';
+-- Удаляем существующего пользователя, если есть
+DROP USER IF EXISTS 'root'@'%';
+
+-- Создаем нового root-пользователя с доступом с любого хоста
+CREATE USER 'root'@'%' IDENTIFIED BY 'nurda0101';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 

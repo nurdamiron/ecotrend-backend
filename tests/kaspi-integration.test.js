@@ -3,67 +3,103 @@ const request = require('supertest');
 const app = require('../server');
 const mysql = require('mysql2/promise');
 
-
-const pool = mysql.createPool({
+// Функция для создания пула соединений
+const createPool = () => mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'nurda0101',
   database: process.env.DB_NAME || 'ecotrend_test',
   waitForConnections: true,
-  connectionLimit: 10
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
+// Функция для ожидания доступности базы данных с повторными попытками
+const waitForDatabase = async (maxRetries = 10, retryInterval = 3000) => {
+  let retries = 0;
+  let pool;
+  
+  while (retries < maxRetries) {
+    try {
+      console.log(`Attempting to connect to test database (attempt ${retries + 1}/${maxRetries})...`);
+      pool = createPool();
+      const connection = await pool.getConnection();
+      console.log('Successfully connected to test database!');
+      connection.release();
+      return pool;
+    } catch (error) {
+      console.error(`Connection attempt ${retries + 1} failed:`, error.message);
+      if (pool) {
+        await pool.end().catch(err => console.error('Error closing pool:', err.message));
+      }
+      retries++;
+      if (retries >= maxRetries) {
+        console.error('Max retries reached. Could not connect to database.');
+        throw error;
+      }
+      console.log(`Waiting ${retryInterval/1000} seconds before next attempt...`);
+      await new Promise(resolve => setTimeout(resolve, retryInterval));
+    }
+  }
+};
 
 describe('Kaspi Integration Tests', () => {
+  let pool;
   // Test device and transaction data
   const testDeviceId = 'TEST-DEVICE-001';
   const testTxnId = 'TEST-TXN-' + Date.now();
   
   beforeAll(async () => {
-    jest.setTimeout(30000);
-    // Try to connect first to detect issues early
+    jest.setTimeout(60000); // Увеличиваем таймаут до 60 секунд для тестов
+    
+    // Ожидаем, пока база данных станет доступной
+    pool = await waitForDatabase();
+    
+    // Create test device in database
     try {
-      console.log('Attempting to connect to test database...');
-      const connection = await pool.getConnection();
-      console.log('Successfully connected to test database!');
-      connection.release();
+      await pool.execute(
+        'INSERT INTO devices (device_id, name) VALUES (?, ?)',
+        [testDeviceId, 'Test Device']
+      );
+      
+      // Initialize balance
+      await pool.execute(
+        'INSERT INTO balances (device_id, balance) VALUES (?, ?)',
+        [testDeviceId, 0]
+      );
+      
+      // Add test chemical
+      await pool.execute(
+        `INSERT INTO chemicals 
+         (device_id, tank_number, name, price) 
+         VALUES (?, ?, ?, ?)`,
+        [testDeviceId, 1, 'Test Chemical', 100]
+      );
+      console.log('Test data created successfully');
     } catch (error) {
-      console.error('Failed to connect to test database:', error.message);
+      console.error('Error setting up test data:', error.message);
       throw error;
     }
-
-
-    // Create test device in database
-    await pool.execute(
-      'INSERT INTO devices (device_id, name) VALUES (?, ?)',
-      [testDeviceId, 'Test Device']
-    );
-    
-    // Initialize balance
-    await pool.execute(
-      'INSERT INTO balances (device_id, balance) VALUES (?, ?)',
-      [testDeviceId, 0]
-    );
-    
-    // Add test chemical
-    await pool.execute(
-      `INSERT INTO chemicals 
-       (device_id, tank_number, name, price) 
-       VALUES (?, ?, ?, ?)`,
-      [testDeviceId, 1, 'Test Chemical', 100]
-    );
   });
   
   afterAll(async () => {
-    // Clean up test data
-    await pool.execute('DELETE FROM chemicals WHERE device_id = ?', [testDeviceId]);
-    await pool.execute('DELETE FROM balances WHERE device_id = ?', [testDeviceId]);
-    await pool.execute('DELETE FROM transactions WHERE device_id = ?', [testDeviceId]);
-    await pool.execute('DELETE FROM devices WHERE device_id = ?', [testDeviceId]);
-    
-    // Close connection pool
-    await pool.end();
+    try {
+      // Clean up test data
+      await pool.execute('DELETE FROM chemicals WHERE device_id = ?', [testDeviceId]);
+      await pool.execute('DELETE FROM balances WHERE device_id = ?', [testDeviceId]);
+      await pool.execute('DELETE FROM transactions WHERE device_id = ?', [testDeviceId]);
+      await pool.execute('DELETE FROM devices WHERE device_id = ?', [testDeviceId]);
+      console.log('Test data cleaned up successfully');
+    } catch (error) {
+      console.error('Error cleaning up test data:', error.message);
+    } finally {
+      // Close connection pool
+      if (pool) {
+        await pool.end();
+        console.log('Database connection pool closed');
+      }
+    }
   });
   
   describe('Check Endpoint', () => {
