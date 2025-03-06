@@ -1,4 +1,3 @@
-# Dockerfile.test
 FROM node:16-alpine
 
 WORKDIR /app
@@ -8,4 +7,8 @@ RUN npm install
 
 COPY . .
 
-CMD ["npm", "test"]
+# Make the jest executable (and all node_modules binaries) executable
+RUN chmod +x node_modules/.bin/*
+
+# OR run jest with npx
+CMD ["npx", "jest"]
