@@ -12,16 +12,17 @@ exports.validateKaspiIP = (req, res, next) => {
   
   logger.info(`Request from IP: ${clientIp}`);
   
-  // Проверка IP-адреса (в рабочей среде нужно будет раскомментировать)
-  // if (clientIp !== config.kaspi.ip) {
-  //   logger.warn(`Unauthorized IP attempt: ${clientIp}`);
-  //   return res.status(403).json({
-  //     success: false,
-  //     message: 'Forbidden: Invalid IP address'
-  //   });
-  // }
+  // In production, uncomment this block to restrict to Kaspi IP
+  if (config.app.env === 'production') {
+    if (clientIp !== config.kaspi.ip) {
+      logger.warn(`Unauthorized IP attempt: ${clientIp}`);
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Invalid IP address'
+      });
+    }
+  }
   
-  // В тестовой среде пропускаем все IP
   next();
 };
 

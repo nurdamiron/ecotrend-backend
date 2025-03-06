@@ -7,6 +7,7 @@ const dispensingModel = require('../models/dispensingModel');
 const kaspiApi = require('../utils/kaspiApi');
 const { pool } = require('../config/database');
 const firebase = require('../utils/firebase');
+const deviceModel = require('../models/deviceModel');
 
 /**
  * Дополнительный метод для получения статуса API Kaspi (для внутреннего использования)
@@ -23,70 +24,70 @@ exports.getKaspiStatus = async (req, res) => {
  * Обработка запроса check от Kaspi
  * Проверяет возможность проведения платежа
  */
+// Enhance checkPayment function
 exports.checkPayment = async (req, res) => {
-    try {
-      const { txn_id, account, sum } = req.query;
-      
-      logger.info(`Check payment request: ${JSON.stringify(req.query)}`);
-      
-      // 1. Verify device exists
-      const deviceExists = await deviceModel.findById(account);
-      if (!deviceExists) {
-        return res.status(200).json({
-          txn_id,
-          result: 1, // Code 1: "account not found"
-          comment: "Device not found"
-        });
-      }
-      
-      // 2. Check device status (active/inactive)
-      const isActive = await checkDeviceStatus(account);
-      if (!isActive) {
-        return res.status(200).json({
-          txn_id,
-          result: 5, // Code 5: "Other provider error"
-          comment: "Device is not active"
-        });
-      }
-      
-      // 3. Check chemicals availability
-      const chemicals = await chemicalModel.getByDeviceId(account);
-      if (!chemicals || chemicals.length === 0) {
-        return res.status(200).json({
-          txn_id,
-          result: 5,
-          comment: "No chemicals available"
-        });
-      }
-      
-      // 4. Success response with additional fields
-      const fields = {
-        field1: {
-          "@name": "device_id",
-          "#text": account
-        },
-        field2: {
-          "@name": "available_chemicals",
-          "#text": chemicals.length.toString()
-        }
-      };
-      
+  try {
+    const { txn_id, account, sum } = req.query;
+    
+    logger.info(`Check payment request: ${JSON.stringify(req.query)}`);
+    
+    // Verify device exists
+    const deviceExists = await deviceModel.findById(account);
+    if (!deviceExists) {
       return res.status(200).json({
         txn_id,
-        result: 0, // Success
-        comment: "Payment check successful",
-        fields
-      });
-      
-    } catch (error) {
-      logger.error(`Error in checkPayment: ${error.message}`);
-      return res.status(200).json({
-        txn_id: req.query.txn_id,
-        result: 5,
-        comment: "Internal server error"
+        result: 1, // Device not found
+        comment: "Device not found"
       });
     }
-  };
+    
+    // Check device status
+    const isDeviceActive = await isDeviceActive(account);
+    if (!isDeviceActive) {
+      return res.status(200).json({
+        txn_id,
+        result: 5, // Other error
+        comment: "Device is not active"
+      });
+    }
+    
+    // Check chemicals availability
+    const chemicals = await chemicalModel.getByDeviceId(account);
+    if (!chemicals || chemicals.length === 0) {
+      return res.status(200).json({
+        txn_id,
+        result: 5,
+        comment: "No chemicals available"
+      });
+    }
+    
+    // Return success with fields
+    const fields = {
+      field1: {
+        "@name": "device_id",
+        "#text": account
+      },
+      field2: {
+        "@name": "available_chemicals",
+        "#text": chemicals.length.toString()
+      }
+    };
+    
+    return res.status(200).json({
+      txn_id,
+      result: 0, // Success
+      comment: "Payment check successful",
+      fields
+    });
+  } catch (error) {
+    logger.error(`Error in checkPayment: ${error.message}`);
+    return res.status(200).json({
+      txn_id: req.query.txn_id,
+      result: 5,
+      comment: "Internal server error"
+    });
+  }
+};
 
 /**
  * Обработка запроса pay от Kaspi
@@ -209,7 +210,7 @@ async function isDeviceActive(deviceId) {
       logger.warn(`Error checking device status in Firebase: ${error.message}`);
     }
     
-    // Если не удалось проверить в Firebase, считаем устройство активным
+    // Если не удалось проверить в Firebase, считаем устройство активным по умолчанию
     return true;
   } catch (error) {
     logger.error(`Error checking device status: ${error.message}`);

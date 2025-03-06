@@ -6,7 +6,7 @@ module.exports = {
       env: process.env.NODE_ENV || 'development',
     },
     kaspi: {
-      apiUrl: process.env.KASPI_API_URL,
+      apiUrl: process.env.API_BASE_URL,
       ip: process.env.KASPI_ALLOWED_IP || '194.187.247.152', // IP для Kaspi API
       timeout: 15000, // Таймаут для запросов к Kaspi API (15 сек)
     },

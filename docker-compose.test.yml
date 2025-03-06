@@ -1,0 +1,35 @@
+# docker-compose.test.yml
+version: '3.8'
+
+services:
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+      - DB_HOST=biz360.czwiyugwum02.eu-north-1.rds.amazonaws.com
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=nurda0101
+      - DB_NAME=ecotrend
+    depends_on:
+      - test-db
+    networks:
+      - test-network
+
+  test-db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=nurda0101
+      - MYSQL_DATABASE=ecotrend
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=nurda0101
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
