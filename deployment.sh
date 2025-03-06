@@ -1,19 +1,18 @@
 #!/bin/bash
 
-# deployment.sh - Place this file in the root directory of your project
+# deployment.sh
 set -e
 
-# Directory containing your application (change this to your actual directory path)
-APP_DIR="/ecotrend-backend"
+APP_DIR="/home/ubuntu/ecotrend-backend"
 cd $APP_DIR
 
 # Pull latest changes
 echo "Pulling latest changes from repository..."
 git pull
 
-# Build test container and run tests
+# Build test container and run tests (with sudo)
 echo "Building test environment and running tests..."
-docker-compose -f docker-compose.test.yml up --build --exit-code-from tests
+sudo docker-compose -f docker-compose.test.yml up --build --exit-code-from tests
 TEST_EXIT_CODE=$?
 
 # If tests pass, deploy to production
@@ -23,12 +22,12 @@ if [ $TEST_EXIT_CODE -eq 0 ]; then
     # Create a backup of the current deployment
     BACKUP_DIR="backups/$(date +%Y%m%d%H%M%S)"
     mkdir -p $BACKUP_DIR
-    docker-compose down
+    sudo docker-compose down
     cp docker-compose.yml .env $BACKUP_DIR/
     
-    # Deploy new version
-    docker-compose build
-    docker-compose up -d
+    # Deploy new version (with sudo)
+    sudo docker-compose build
+    sudo docker-compose up -d
     
     echo "Deployment completed successfully!"
 else

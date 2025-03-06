@@ -3,7 +3,7 @@
 
 set -e
 
-APP_DIR="/ecotrend-backend"
+APP_DIR="/home/ubuntu/ecotrend-backend"
 cd $APP_DIR
 
 # List available backups
