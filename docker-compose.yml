@@ -62,11 +62,7 @@ services:
     networks:
       - app-network
 
-networks:
-  app-network:
-    driver: bridge
-
-watchtower:
+  watchtower:
     image: containrrr/watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -74,6 +70,10 @@ watchtower:
     restart: always
     networks:
       - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   mysql-data:
