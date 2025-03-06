@@ -11,22 +11,23 @@ services:
       - DB_PORT=3306
       - DB_USER=ecotrend_user
       - DB_PASSWORD=nurda0101
-      - DB_NAME=ecotrend
+      - DB_NAME=ecotrend_test
     depends_on:
       - test-db
     networks:
       - test-network
+    command: sh -c "sleep 10 && npm test -- --forceExit"
 
   test-db:
     image: mysql:8.0
     environment:
       - MYSQL_ROOT_PASSWORD=nurda0101
-      - MYSQL_DATABASE=ecotrend
+      - MYSQL_DATABASE=ecotrend_test
       - MYSQL_USER=ecotrend_user
       - MYSQL_PASSWORD=nurda0101
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --bind-address=0.0.0.0
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
     networks:
       - test-network
 
