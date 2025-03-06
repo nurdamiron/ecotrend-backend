@@ -7,5 +7,8 @@ RUN npm install
 
 COPY . .
 
-# Ensure MySQL is ready before running tests
-CMD ["sh", "-c", "sleep 20 && NODE_ENV=test npm test -- --forceExit"]
+# Make all executables in node_modules/.bin directory executable
+RUN chmod +x node_modules/.bin/*
+
+# Use npx to run Jest (avoids permission issues)
+CMD ["sh", "-c", "sleep 15 && npx jest --forceExit"]

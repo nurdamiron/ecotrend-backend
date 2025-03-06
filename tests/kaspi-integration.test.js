@@ -21,15 +21,16 @@ describe('Kaspi Integration Tests', () => {
   const testTxnId = 'TEST-TXN-' + Date.now();
   
   beforeAll(async () => {
-  
+    jest.setTimeout(30000);
     // Try to connect first to detect issues early
     try {
+      console.log('Attempting to connect to test database...');
       const connection = await pool.getConnection();
-      console.log('Successfully connected to the test database');
+      console.log('Successfully connected to test database!');
       connection.release();
     } catch (error) {
       console.error('Failed to connect to test database:', error.message);
-      throw error; // This will fail the tests immediately
+      throw error;
     }
 
 

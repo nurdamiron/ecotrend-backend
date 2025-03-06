@@ -2,7 +2,7 @@
 CREATE DATABASE IF NOT EXISTS ecotrend_test;
 USE ecotrend_test;
 
--- Allow root user to connect from any host
+-- Allow root to connect from anywhere
 CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY 'nurda0101';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;

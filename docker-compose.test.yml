@@ -22,6 +22,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=nurda0101
       - MYSQL_DATABASE=ecotrend_test
+      - MYSQL_ROOT_HOST=%
     ports:
       - "33306:3306"
     command: >
@@ -29,6 +30,7 @@ services:
       --character-set-server=utf8mb4 
       --collation-server=utf8mb4_unicode_ci 
       --bind-address=0.0.0.0
+      --skip-name-resolve
     volumes:
       - ./init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
     networks:
