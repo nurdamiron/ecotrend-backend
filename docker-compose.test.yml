@@ -1,4 +1,3 @@
-# docker-compose.test.yml
 version: '3.8'
 
 services:
@@ -25,6 +24,7 @@ services:
       - MYSQL_DATABASE=ecotrend
       - MYSQL_USER=ecotrend_user
       - MYSQL_PASSWORD=nurda0101
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --bind-address=0.0.0.0
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:

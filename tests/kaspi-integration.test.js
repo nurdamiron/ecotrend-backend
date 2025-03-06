@@ -9,6 +9,18 @@ describe('Kaspi Integration Tests', () => {
   const testTxnId = 'TEST-TXN-' + Date.now();
   
   beforeAll(async () => {
+  
+    // Try to connect first to detect issues early
+    try {
+      const connection = await pool.getConnection();
+      console.log('Successfully connected to the test database');
+      connection.release();
+    } catch (error) {
+      console.error('Failed to connect to test database:', error.message);
+      throw error; // This will fail the tests immediately
+    }
+
+
     // Create test device in database
     await pool.execute(
       'INSERT INTO devices (device_id, name) VALUES (?, ?)',

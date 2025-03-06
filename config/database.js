@@ -1,4 +1,4 @@
-// config/database.js
+// config/database.js for tests
 const mysql = require('mysql2/promise');
 const logger = require('../utils/logger');
 
@@ -8,16 +8,16 @@ const dbConfig = {
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'kaspi_integration',
+  database: process.env.DB_NAME || 'ecotrend',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 };
 
-// Создание пула соединений
+// Create connection pool
 const pool = mysql.createPool(dbConfig);
 
-// Проверка соединения с базой данных
+// Test connection
 const testConnection = async () => {
   try {
     const connection = await pool.getConnection();
