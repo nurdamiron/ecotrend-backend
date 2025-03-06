@@ -60,8 +60,13 @@ const balanceModel = {
         );
       }
       
-      // Синхронизируем баланс с Firebase
-      await firebase.updateDeviceBalance(deviceId, amount);
+      // Пытаемся синхронизировать баланс с Firebase, но игнорируем ошибки
+      try {
+        await firebase.updateDeviceBalance(deviceId, amount);
+      } catch (error) {
+        // Логируем ошибку, но не прерываем выполнение
+        logger.warn(`Firebase sync error (ignored): ${error.message}`);
+      }
       
       logger.info(`Balance updated for device ${deviceId}: +${amount}`);
       return true;
@@ -108,8 +113,13 @@ const balanceModel = {
         [newBalance, deviceId]
       );
       
-      // Синхронизируем баланс с Firebase
-      await firebase.updateDeviceBalance(deviceId, -amount);
+      // Пытаемся синхронизировать баланс с Firebase, но игнорируем ошибки
+      try {
+        await firebase.updateDeviceBalance(deviceId, -amount);
+      } catch (error) {
+        // Логируем ошибку, но не прерываем выполнение
+        logger.warn(`Firebase sync error (ignored): ${error.message}`);
+      }
       
       logger.info(`Balance decreased for device ${deviceId}: -${amount}`);
       return true;
