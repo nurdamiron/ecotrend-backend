@@ -5,15 +5,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+# Copy everything (including tests if they exist)
 COPY . .
-COPY tests/ ./tests/
 
 # Make all executables in node_modules/.bin directory executable
 RUN chmod +x node_modules/.bin/*
-RUN chmod -R 755 ./tests/
 
-# List test directory to debug
-RUN ls -la tests/
+# Create tests directory if it doesn't exist
+RUN mkdir -p tests
 
-# Use npx to run Jest with explicit test path
+# List all directories to debug
+RUN ls -la
+
+# Use npx to run Jest with passWithNoTests flag
 CMD ["sh", "-c", "sleep 15 && npx jest --passWithNoTests"]

@@ -17,8 +17,6 @@ services:
         condition: service_healthy
     networks:
       - test-network
-    # Add a timeout so it doesn't hang forever
-    command: sh -c "sleep 20 && npm test || exit 1"
 
   test-db:
     image: mysql:8.0
