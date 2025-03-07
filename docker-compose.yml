@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   api:
     build: .
@@ -28,7 +27,6 @@ services:
       - db
     networks:
       - app-network
-
   db:
     image: mysql:8.0
     container_name: kaspi-mysql
@@ -39,20 +37,19 @@ services:
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "3307:3306"  # Изменено с 3306:3306 для избежания конфликтов с локальным MySQL
     volumes:
       - mysql-data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-network
-
   nginx:
     image: nginx:alpine
     container_name: kaspi-nginx
     restart: always
     ports:
-      - "8080:80"
-      - "443:443"
+      - "8080:80"    # Уже хорошо - нестандартный порт
+      - "8443:443"   # Уже хорошо - нестандартный порт
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/ssl:/etc/nginx/ssl
@@ -61,19 +58,17 @@ services:
       - api
     networks:
       - app-network
-
   watchtower:
     image: containrrr/watchtower
+    container_name: ecotrend-backend-watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --interval 3600 --cleanup
     restart: always
     networks:
       - app-network
-
 networks:
   app-network:
     driver: bridge
-
 volumes:
   mysql-data:
