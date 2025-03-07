@@ -14,16 +14,17 @@ services:
       - DB_NAME=ecotrend_test
     depends_on:
       test-db:
-        condition: service_healthy  # Ждем, пока база данных полностью запустится
+        condition: service_healthy
     networks:
       - test-network
+    # Add a timeout so it doesn't hang forever
+    command: sh -c "sleep 20 && npm test || exit 1"
 
   test-db:
     image: mysql:8.0
     environment:
       - MYSQL_ROOT_PASSWORD=nurda0101
       - MYSQL_DATABASE=ecotrend_test
-      # Явно разрешаем подключения со всех хостов
       - MYSQL_ROOT_HOST=%
     ports:
       - "33306:3306"
@@ -32,12 +33,12 @@ services:
       --character-set-server=utf8mb4 
       --collation-server=utf8mb4_unicode_ci 
       --bind-address=0.0.0.0
-    # Добавляем проверку работоспособности
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pnurda0101"]
       interval: 2s
       timeout: 5s
       retries: 15
+      start_period: 10s
     volumes:
       - ./init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
     networks:

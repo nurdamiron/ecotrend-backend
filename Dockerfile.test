@@ -10,5 +10,5 @@ COPY . .
 # Make all executables in node_modules/.bin directory executable
 RUN chmod +x node_modules/.bin/*
 
-# Use npx to run Jest (avoids permission issues)
-CMD ["sh", "-c", "sleep 15 && npx jest --forceExit"]
+# Add explicit timeout to Jest
+CMD ["sh", "-c", "sleep 15 && npx jest --forceExit --detectOpenHandles --verbose --testTimeout=60000"]

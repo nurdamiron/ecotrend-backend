@@ -1,0 +1,56 @@
+# Node modules and dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Version control
+.git
+.gitignore
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build directories
+build
+dist
+
+# Logs
+logs
+*.log
+
+# Docker files
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Testing
+coverage
+.nyc_output
+tests
+
+# Development tools
+.vscode
+.idea
+*.sublime-*
+
+# Backups
+backups
+
+# MySQL config
+*.cnf
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# Deployment scripts
+deployment.sh
+rollback.sh
+
+# Others
+.DS_Store
+.editorconfig

@@ -31,19 +31,22 @@ const createPool = () => mysql.createPool({
 });
 
 // Функция для ожидания доступности базы данных с повторными попытками
-const waitForDatabase = async (maxRetries = 10, retryInterval = 3000) => {
+const waitForDatabase = async (maxRetries = 15, retryInterval = 5000) => {
   let retries = 0;
   
   while (retries < maxRetries) {
     try {
-      console.log(`Attempting to connect to test database (attempt ${retries + 1}/${maxRetries})...`);
+      console.log(`Attempt ${retries + 1}/${maxRetries} to connect to database at ${process.env.DB_HOST}:${process.env.DB_PORT}`);
       
       // Создаем новый пул при каждой попытке
       const newPool = createPool();
-      
-      // Проверяем соединение
       const connection = await newPool.getConnection();
       console.log('Successfully connected to test database!');
+      
+      // Test query to verify connection is working
+      const [result] = await connection.query('SELECT 1 as test');
+      console.log('Query test result:', result);
+
       connection.release();
       
       return newPool;

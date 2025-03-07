@@ -10,10 +10,17 @@ cd $APP_DIR
 echo "Pulling latest changes from repository..."
 git pull
 
-# Build test container and run tests (with sudo)
+# Build test container and run tests (with sudo and timeout)
 echo "Building test environment and running tests..."
-sudo docker-compose -f docker-compose.test.yml up --build --exit-code-from tests
+timeout 300 sudo docker-compose -f docker-compose.test.yml up --build --exit-code-from tests
 TEST_EXIT_CODE=$?
+
+# Check if timeout occurred
+if [ $TEST_EXIT_CODE -eq 124 ]; then
+    echo "Tests timed out after 5 minutes. Aborting deployment."
+    sudo docker-compose -f docker-compose.test.yml down
+    exit 1
+fi
 
 # If tests pass, deploy to production
 if [ $TEST_EXIT_CODE -eq 0 ]; then
@@ -32,5 +39,6 @@ if [ $TEST_EXIT_CODE -eq 0 ]; then
     echo "Deployment completed successfully!"
 else
     echo "Tests failed! Deployment aborted."
+    sudo docker-compose -f docker-compose.test.yml down
     exit 1
 fi
