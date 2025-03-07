@@ -133,13 +133,16 @@ exports.processPayment = async (req, res) => {
       if (existingTransaction) {
         await connection.commit();
 
+        // Здесь всё правильно, но стоит добавить подробный лог
+        logger.info(`Duplicate payment attempt detected for txn_id: ${txn_id}`);
+
         // Преобразуем amount из строки или объекта в число перед вызовом toFixed
         const amount = parseFloat(existingTransaction.amount);
         
         return res.status(200).json({
           txn_id,
-          prv_txn: existingTransaction.prv_txn_id,
-          sum: amount.toFixed(2), // Теперь это работает правильно
+          prv_txn_id: existingTransaction.prv_txn_id, // Используйте prv_txn_id
+          sum: amount.toFixed(2),
           result: existingTransaction.status,
           comment: "Transaction already processed"
         });
