@@ -32,10 +32,10 @@ services:
     container_name: kaspi-mysql
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${DB_NAME}
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=nurda0101
+      - MYSQL_DATABASE=ecotrend
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=nurda0101
     ports:
       - "3307:3306"  # Изменено с 3306:3306 для избежания конфликтов с локальным MySQL
     volumes:
