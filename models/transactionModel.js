@@ -18,13 +18,14 @@ const transactionModel = {
       
       const [result] = await conn.execute(
         `INSERT INTO transactions 
-         (txn_id, prv_txn_id, device_id, amount, status) 
-         VALUES (?, ?, ?, ?, ?)`,
+         (txn_id, prv_txn_id, device_id, amount, txn_date, status) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
         [
           transaction.txn_id,
           transaction.prv_txn_id,
           transaction.device_id,
           transaction.amount,
+          transaction.txn_date,
           transaction.status
         ]
       );

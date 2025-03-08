@@ -149,12 +149,14 @@ exports.processPayment = async (req, res) => {
       
       // 2. Create new transaction
       const prv_txn_id = generateProviderTransactionId();
-      
+      const formattedTxnDate = `${txn_date.substring(0,4)}-${txn_date.substring(4,6)}-${txn_date.substring(6,8)} ${txn_date.substring(8,10)}:${txn_date.substring(10,12)}:${txn_date.substring(12,14)}`;
+
       const transactionId = await transactionModel.create({
         txn_id,
         prv_txn_id,
         device_id: account,
         amount,
+        txn_date: formattedTxnDate, // добавлена дата
         status: 0 // Success
       }, connection);
       
