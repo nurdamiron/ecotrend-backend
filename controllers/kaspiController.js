@@ -48,7 +48,8 @@ exports.getKaspiStatus = async (req, res) => {
   return res.status(200).json({
     success: true,
     message: 'Kaspi API is working properly',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    bin: config.kaspi.bin
   });
 };
 
@@ -69,6 +70,7 @@ exports.checkPayment = async (req, res) => {
       return res.status(200).json({
         txn_id,
         result: 1, // Device not found
+        bin: config.kaspi.bin,
         comment: "Device not found"
       });
     }
@@ -79,6 +81,7 @@ exports.checkPayment = async (req, res) => {
       return res.status(200).json({
         txn_id,
         result: 5, // Other error
+        bin: config.kaspi.bin,
         comment: "Device is not active"
       });
     }
@@ -90,6 +93,7 @@ exports.checkPayment = async (req, res) => {
       return res.status(200).json({
         txn_id,
         result: 5,
+        bin: config.kaspi.bin,
         comment: "No chemicals available"
       });
     }
@@ -110,12 +114,14 @@ exports.checkPayment = async (req, res) => {
       return res.status(200).json({
           txn_id,
           result: 1,
+          bin: config.kaspi.bin,
           comment: "Device not found"
       });
     } else if (account === 'DEVICE-INACTIVE') {
       return res.status(200).json({
           txn_id,
           result: 5,
+          bin: config.kaspi.bin,
           comment: "Device is not active"
       });
     }
@@ -183,6 +189,7 @@ exports.processPayment = async (req, res) => {
         prv_txn_id,
         device_id: account,
         amount,
+        bin: config.kaspi.bin,
         txn_date: formattedTxnDate, // добавлена дата
         status: 0 // Success
       }, connection);
