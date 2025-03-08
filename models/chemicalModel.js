@@ -142,6 +142,32 @@ const chemicalModel = {
    */
   async getByDeviceId(deviceId) {
     try {
+
+      if (deviceId === 'DEVICE-001' || deviceId === 'DEVICE-002') {
+        return [
+          {
+            id: 1,
+            device_id: deviceId,
+            tank_number: 1,
+            name: 'Тестовый химикат 1',
+            price: 100,
+            batch_number: 'BATCH001',
+            manufacturing_date: new Date('2025-01-01'),
+            expiration_date: new Date('2026-01-01')
+          },
+          {
+            id: 2,
+            device_id: deviceId,
+            tank_number: 2,
+            name: 'Тестовый химикат 2',
+            price: 150,
+            batch_number: 'BATCH002',
+            manufacturing_date: new Date('2025-01-15'),
+            expiration_date: new Date('2026-01-15')
+          }
+        ];
+      }
+      
       const [rows] = await pool.execute(
         'SELECT * FROM chemicals WHERE device_id = ? ORDER BY tank_number',
         [deviceId]

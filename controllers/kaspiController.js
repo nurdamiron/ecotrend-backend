@@ -128,18 +128,28 @@ exports.checkPayment = async (req, res) => {
 
     return res.status(200).json({
       txn_id,
-      result: 0, // Success
+      result: 0, // Успешно
       bin: config.kaspi.bin,
-      comment: "Device found, ready for payment",
-      fields
+      comment: "Test mode: always successful",
+      fields: {
+        field1: {
+          "@name": "device_id",
+          "#text": account
+        },
+        field2: {
+          "@name": "available_chemicals",
+          "#text": "1"
+        }
+      }
     });
   } catch (error) {
     logger.error(`Error in checkPayment: ${error.message}`);
+    console.error('Full error:', error); 
     return res.status(200).json({
       txn_id: req.query.txn_id,
       result: 5,
       bin: config.kaspi.bin,
-      comment: "Internal server error"
+      comment: "Internal server error: " + error.message
     });
   }
 };

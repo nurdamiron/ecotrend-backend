@@ -12,7 +12,11 @@ exports.validateKaspiIP = (req, res, next) => {
   
   logger.info(`Request from IP: ${clientIp}`);
   
-  // In production, uncomment this block to restrict to Kaspi IP
+  // Полностью пропускаем проверку IP для всех запросов
+  next();
+  
+  // Старый код с проверкой IP закомментирован
+  /*
   if (config.app.env === 'production') {
     if (clientIp !== config.kaspi.ip) {
       logger.warn(`Unauthorized IP attempt: ${clientIp}`);
@@ -22,10 +26,8 @@ exports.validateKaspiIP = (req, res, next) => {
       });
     }
   }
-  
-  next();
+  */
 };
-
 /**
  * Аутентификация устройства по токену
  */

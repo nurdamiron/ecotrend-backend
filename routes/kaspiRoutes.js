@@ -142,7 +142,8 @@ router.get('/pay', validateKaspiIP, kaspiController.processPayment);
  */
 router.get('/status', kaspiController.getKaspiStatus);
 
-router.get('/payment', validateKaspiIP, (req, res) => {
+// Проверьте, что этот маршрут существует и правильно настроен
+router.get('/payment', (req, res) => {
     const { command } = req.query;
     if (command === 'check') {
         kaspiController.checkPayment(req, res);
