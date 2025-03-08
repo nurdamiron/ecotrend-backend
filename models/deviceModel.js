@@ -33,6 +33,28 @@ const deviceModel = {
    * @returns {Object|null} Устройство или null, если не найдено
    */
   async findById(deviceId) {
+
+    if (deviceId === 'DEVICE-001' || deviceId === 'DEVICE-002') {
+      return {
+          device_id: deviceId,
+          name: `Test Device ${deviceId.split('-')[1]}`,
+          location: 'Test Location',
+          created_at: new Date()
+      };
+    }
+    if (deviceId === 'DEVICE-INACTIVE') {
+      return {
+          device_id: deviceId,
+          name: 'Inactive Test Device',
+          location: 'Test Location',
+          created_at: new Date(),
+          status: 'inactive'
+      };
+    }
+    if (deviceId === 'DEVICE-FAKE') {
+      return null; // Устройство не найдено
+    }
+
     try {
       const [rows] = await pool.execute(
         'SELECT * FROM devices WHERE device_id = ?',

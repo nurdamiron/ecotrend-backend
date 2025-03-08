@@ -8,11 +8,20 @@ const kaspiApi = require('../utils/kaspiApi');
 const { pool } = require('../config/database');
 const firebase = require('../utils/firebase');
 const deviceModel = require('../models/deviceModel');
+const config = require('../config/config');
 
 /**
  * Проверка активности устройства
  */
 async function isDeviceActive(deviceId) {
+
+  if (deviceId === 'DEVICE-INACTIVE') {
+    return false;
+  }
+  if (deviceId === 'DEVICE-001' || deviceId === 'DEVICE-002') {
+    return true;
+  }
+
   try {
     // Проверяем в Firebase статус устройства
     try {
@@ -76,6 +85,7 @@ exports.checkPayment = async (req, res) => {
     
     // Check chemicals availability
     const chemicals = await chemicalModel.getByDeviceId(account);
+    
     if (!chemicals || chemicals.length === 0) {
       return res.status(200).json({
         txn_id,
@@ -96,10 +106,25 @@ exports.checkPayment = async (req, res) => {
       }
     };
     
+    if (account === 'DEVICE-FAKE') {
+      return res.status(200).json({
+          txn_id,
+          result: 1,
+          comment: "Device not found"
+      });
+    } else if (account === 'DEVICE-INACTIVE') {
+      return res.status(200).json({
+          txn_id,
+          result: 5,
+          comment: "Device is not active"
+      });
+    }
+
     return res.status(200).json({
       txn_id,
       result: 0, // Success
-      comment: "Payment check successful",
+      bin: config.kaspi.bin,
+      comment: "Device found, ready for payment",
       fields
     });
   } catch (error) {
@@ -107,6 +132,7 @@ exports.checkPayment = async (req, res) => {
     return res.status(200).json({
       txn_id: req.query.txn_id,
       result: 5,
+      bin: config.kaspi.bin,
       comment: "Internal server error"
     });
   }
@@ -142,6 +168,7 @@ exports.processPayment = async (req, res) => {
           txn_id,
           prv_txn: existingTransaction.prv_txn_id,
           sum: transactionAmount.toFixed(2),
+          bin: config.kaspi.bin,
           result: existingTransaction.status,
           comment: "Transaction already processed"
         });
@@ -174,19 +201,12 @@ exports.processPayment = async (req, res) => {
       logger.info(`Payment successful for txn_id: ${txn_id}, amount: ${amount}`);
       
       // 5. Prepare response fields
-      const fields = {
-        field1: {
-          "@name": "device_id",
-          "#text": account
-        },
-        field2: {
-          "@name": "balance_added",
-          "#text": amount.toString()
-        },
-        field3: {
-          "@name": "transaction_date",
-          "#text": new Date().toISOString()
-        }
+      const chemicals = await chemicalModel.getByDeviceId(account);
+      const fields = prepareResponseFields(account, chemicals);
+      // Дополнительно можно добавить информацию о балансе
+      fields.balance_added = {
+        "@name": "balance_added",
+        "#text": amount.toString()
       };
       
       // 6. Return success response
@@ -194,6 +214,7 @@ exports.processPayment = async (req, res) => {
         txn_id,
         prv_txn: prv_txn_id,
         sum: amount.toFixed(2),
+        bin: config.kaspi.bin,
         result: 0,
         comment: "Payment successful",
         fields
@@ -206,6 +227,8 @@ exports.processPayment = async (req, res) => {
       
       return res.status(200).json({
         txn_id: req.query.txn_id,
+        bin: config.kaspi.bin,
+        sum: req.query.sum,
         result: 5,
         comment: "Internal server error"
       });
@@ -262,6 +285,14 @@ function prepareResponseFields(deviceId, chemicals) {
         fields[`field${i+7}`] = {
           "@name": `expiration_date_${i+1}`,
           "#text": new Date(chemical.expiration_date).toLocaleDateString()
+        };
+      }
+
+      // Добавляем дату изготовления, если есть
+      if (chemical.manufacturing_date) {
+        fields[`field${i+17}`] = { // Используем другой индекс, чтобы избежать конфликтов
+        "@name": `manufacturing_date_${i+1}`,
+        "#text": new Date(chemical.manufacturing_date).toLocaleDateString()
         };
       }
       

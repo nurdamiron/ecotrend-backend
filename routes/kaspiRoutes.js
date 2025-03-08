@@ -142,4 +142,20 @@ router.get('/pay', validateKaspiIP, kaspiController.processPayment);
  */
 router.get('/status', kaspiController.getKaspiStatus);
 
+router.get('/payment', validateKaspiIP, (req, res) => {
+    const { command } = req.query;
+    if (command === 'check') {
+        kaspiController.checkPayment(req, res);
+    } else if (command === 'pay') {
+        kaspiController.processPayment(req, res);
+    } else {
+        res.status(400).json({
+            result: 5,
+            comment: "Invalid command"
+        });
+    }
+});
+
+
+
 module.exports = router;

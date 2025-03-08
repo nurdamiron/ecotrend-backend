@@ -9,6 +9,8 @@ module.exports = {
       apiUrl: process.env.API_BASE_URL,
       ip: process.env.KASPI_ALLOWED_IP || '194.187.247.152', // IP для Kaspi API
       timeout: 15000, // Таймаут для запросов к Kaspi API (15 сек)
+      bin: process.env.KASPI_BIN || 'BINTEST001'
+
     },
     firebase: {
       databaseURL: process.env.FIREBASE_DB_URL,
