@@ -142,6 +142,52 @@ router.get('/pay', validateKaspiIP, kaspiController.processPayment);
  */
 router.get('/status', kaspiController.getKaspiStatus);
 
+
+/**
+ * @swagger
+ * /api/kaspi/generate-qr/{deviceId}/{amount}:
+ *   get:
+ *     summary: Генерация QR-кода для оплаты через Kaspi
+ *     tags: [Kaspi]
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID устройства
+ *       - in: path
+ *         name: amount
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Сумма платежа
+ *     responses:
+ *       200:
+ *         description: QR-код успешно сгенерирован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     device_id:
+ *                       type: string
+ *                     amount:
+ *                       type: number
+ *                     txn_id:
+ *                       type: string
+ *                     qr_code_url:
+ *                       type: string
+ */
+router.get('/generate-qr/:deviceId/:amount', kaspiController.generateQR);
+
+
 // Проверьте, что этот маршрут существует и правильно настроен
 router.get('/payment', (req, res) => {
     const { command } = req.query;

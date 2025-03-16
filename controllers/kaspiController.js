@@ -54,6 +54,59 @@ exports.getKaspiStatus = async (req, res) => {
 };
 
 /**
+ * Генерировать QR-код для оплаты
+ */
+exports.generateQR = async (req, res) => {
+  try {
+    const { deviceId, amount } = req.params;
+    
+    logger.info(`Generate QR code request for device: ${deviceId}, amount: ${amount}`);
+    
+    // Проверяем, существует ли устройство
+    const device = await deviceModel.findById(deviceId);
+    
+    if (!device) {
+      return res.status(404).json({
+        success: false,
+        message: 'Device not found'
+      });
+    }
+    
+    // Проверяем сумму
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid amount'
+      });
+    }
+    
+    // Генерируем уникальный ID транзакции
+    const txnId = `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // Генерируем URL для QR-кода
+    const qrCodeUrl = kaspiApi.generateQRCodeUrl(deviceId, parsedAmount);
+    
+    return res.status(200).json({
+      success: true,
+      data: {
+        device_id: deviceId,
+        amount: parsedAmount,
+        txn_id: txnId,
+        qr_code_url: qrCodeUrl
+      }
+    });
+  } catch (error) {
+    logger.error(`Error generating QR code: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate QR code',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Обработка запроса check от Kaspi
  * Проверяет возможность проведения платежа
  */

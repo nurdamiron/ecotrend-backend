@@ -1,48 +1,76 @@
-// server.js - Основная точка входа в приложение
+// app.js
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
 const morgan = require('morgan');
-const dotenv = require('dotenv');
+const setupCors = require('./middleware/cors');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
+const config = require('./config/config');
 
-// Загрузка переменных окружения
-dotenv.config();
+// Импорт маршрутов
+const deviceRoutes = require('./routes/deviceRoutes');
+const balanceRoutes = require('./routes/balanceRoutes');
+const kaspiRoutes = require('./routes/kaspiRoutes');
+const dispensingRoutes = require('./routes/dispensingRoutes');
 
-// Инициализация Express
+// Инициализация Firebase
+const firebase = require('./utils/firebase');
+try {
+  firebase.initializeFirebase();
+} catch (error) {
+  logger.warn(`Firebase initialization failed: ${error.message}`);
+}
+
+// Создание экземпляра приложения
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(helmet()); // Безопасность
-app.use(cors()); // CORS
-app.use(express.json()); // Парсинг JSON
-app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } })); // Логирование
+// Настройка CORS
+app.use(setupCors());
 
-// Маршруты
-app.use('/api/devices', require('./routes/deviceRoutes'));
-app.use('/api/kaspi', require('./routes/kaspiRoutes'));
-app.use('/api/balance', require('./routes/balanceRoutes'));
+// Логирование запросов
+app.use(morgan('dev'));
+
+// Парсинг JSON и URL-encoded данных
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Регистрация маршрутов
+app.use('/api/devices', deviceRoutes);
+app.use('/api/balance', balanceRoutes);
+app.use('/api/kaspi', kaspiRoutes);
+app.use('/api/dispensing', dispensingRoutes);
+
+// Корневой маршрут API
+app.get('/api', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to EcoTrend API',
+    version: config.app.version
+  });
+});
+
+// Маршрут для проверки здоровья системы
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'System is healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Обработка неизвестных маршрутов
+app.use((req, res, next) => {
+  const error = new Error('Route not found');
+  error.statusCode = 404;
+  next(error);
+});
 
 // Обработка ошибок
 app.use(errorHandler);
 
 // Запуск сервера
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-});
-
-// Обработка необработанных исключений
-process.on('uncaughtException', (error) => {
-  logger.error('Uncaught Exception:', error);
-  process.exit(1);
-});
-
-// Обработка необработанных промисов
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
+  logger.info(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
