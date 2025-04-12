@@ -1,26 +1,38 @@
 // controllers/deviceController.js
 const deviceModel = require('../models/deviceModel');
 const chemicalModel = require('../models/chemicalModel');
+const balanceModel = require('../models/balanceModel'); // Added for explicit balance initialization
 const firebase = require('../utils/firebase');
 const logger = require('../utils/logger');
+const { pool } = require('../config/database'); // Added for transaction support
 
 /**
  * Зарегистрировать новое устройство
  */
 exports.registerDevice = async (req, res) => {
+  let connection = null;
+  
   try {
     const { device_id, name, location } = req.body;
     
-    if (!device_id || !name) {
+    // Enhanced validation
+    if (!device_id || typeof device_id !== 'string') {
       return res.status(400).json({
         success: false,
-        message: 'Device ID and name are required'
+        message: 'Valid device_id (string) is required'
+      });
+    }
+    
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid device name (string) is required'
       });
     }
     
     logger.info(`Register device request: ${JSON.stringify(req.body)}`);
     
-    // Проверить, не существует ли уже устройство с таким ID
+    // Check if device already exists
     const existingDevice = await deviceModel.findById(device_id);
     
     if (existingDevice) {
@@ -30,27 +42,54 @@ exports.registerDevice = async (req, res) => {
       });
     }
     
-    // Создать устройство
-    const device = await deviceModel.create({
-      device_id,
-      name,
-      location: location || ''
-    });
+    // Get a database connection for transaction
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
     
-    // Инициализировать баланс устройства
-    await deviceModel.initBalance(device_id);
-    
-    // Синхронизировать с Firebase, если устройство уже существует там
     try {
-      await firebase.syncDeviceData(device_id);
+      // Create device
+      await connection.execute(
+        'INSERT INTO devices (device_id, name, location) VALUES (?, ?, ?)',
+        [device_id, name, location || '']
+      );
+      
+      // Initialize balance explicitly
+      await connection.execute(
+        'INSERT INTO balances (device_id, balance) VALUES (?, ?)',
+        [device_id, 0]
+      );
+      
+      // Add default chemicals (tanks 1-7)
+      for (let tankNumber = 1; tankNumber <= 7; tankNumber++) {
+        await connection.execute(
+          `INSERT INTO chemicals 
+           (device_id, tank_number, name, price, batch_number, manufacturing_date, expiration_date) 
+           VALUES (?, ?, ?, ?, NULL, NULL, NULL)`,
+          [device_id, tankNumber, `Default Chemical ${tankNumber}`, 100]
+        );
+      }
+      
+      await connection.commit();
+      
+      // Get full device data to return
+      const device = await deviceModel.findById(device_id);
+      
+      // Sync with Firebase (non-blocking, won't fail registration)
+      try {
+        await firebase.syncDeviceData(device_id);
+      } catch (firebaseError) {
+        logger.warn(`Failed to sync new device with Firebase: ${firebaseError.message}`);
+      }
+      
+      return res.status(201).json({
+        success: true,
+        message: 'Device registered successfully',
+        data: device
+      });
     } catch (error) {
-      logger.warn(`Failed to sync device with Firebase: ${error.message}`);
+      if (connection) await connection.rollback();
+      throw error;
     }
-    
-    return res.status(201).json({
-      success: true,
-      data: device
-    });
   } catch (error) {
     logger.error(`Error registering device: ${error.message}`);
     return res.status(500).json({
@@ -58,6 +97,8 @@ exports.registerDevice = async (req, res) => {
       message: 'Failed to register device',
       error: error.message
     });
+  } finally {
+    if (connection) connection.release();
   }
 };
 
