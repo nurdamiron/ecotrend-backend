@@ -181,6 +181,49 @@ const getChemicals = async (deviceId) => {
 };
 
 /**
+ * Отправить команду дозирования устройству через Firebase
+ * @param {String} deviceId - ID устройства
+ * @param {Object} command - Данные команды: tank_number, volume и т.д.
+ * @returns {Boolean} Статус успеха
+ */
+const sendDispensingCommand = async (deviceId, command) => {
+  try {
+    // Валидация параметров
+    if (!deviceId || typeof deviceId !== 'string') {
+      logger.warn(`Invalid deviceId provided to sendDispensingCommand: ${deviceId}`);
+      return false;
+    }
+    
+    if (!command || !command.tank_number || !command.volume) {
+      logger.warn(`Invalid command data provided to sendDispensingCommand`);
+      return false;
+    }
+    
+    if (!firebaseInitialized && !initializeFirebase()) {
+      logger.warn(`Firebase not initialized. Skipping dispensing command for device ${deviceId}.`);
+      return false;
+    }
+    
+    // Создаем команду с временной меткой
+    const dispensingCommand = {
+      ...command,
+      type: 'dispense',
+      timestamp: Date.now(),
+      status: 'pending'
+    };
+    
+    // Отправляем команду в Firebase
+    await getDatabase().ref(`devices/${deviceId}/commands/dispensing`).set(dispensingCommand);
+    
+    logger.info(`Dispensing command sent to device ${deviceId}: ${JSON.stringify(command)}`);
+    return true;
+  } catch (error) {
+    logger.error(`Error sending dispensing command: ${error.message}`);
+    return false;
+  }
+};
+
+/**
  * Safely sync device data from Firebase to MySQL with fallback
  * @param {String} deviceId - ID of the device
  * @returns {Object} Device data or empty object if not found
@@ -229,6 +272,7 @@ module.exports = {
   updateDeviceBalance,
   getChemicals,
   syncDeviceData,
+  sendDispensingCommand,
   // Expose for testing
   _isInitialized: () => firebaseInitialized
 };

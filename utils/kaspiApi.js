@@ -1,4 +1,4 @@
-// utils/kaspiApi.js
+// utils/kaspiApi.js - обновленная версия для системы прямой оплаты
 const axios = require('axios');
 const config = require('../config/config');
 const logger = require('./logger');
@@ -39,17 +39,17 @@ const sendRequest = async (method, endpoint, data = {}) => {
 };
 
 /**
- * Генерировать URL для QR-кода Kaspi
+ * Генерировать URL для QR-кода Kaspi для прямой оплаты
  * @param {String} deviceId - ID устройства
  * @param {Number} amount - Сумма платежа
+ * @param {String} txnId - ID транзакции для отслеживания
  * @returns {String} URL для QR-кода
  */
-const generateQRCodeUrl = (deviceId, amount) => {
-  // Здесь нужно указать правильный формат URL для QR-кода Kaspi
-  // Это примерная структура, уточните в документации Kaspi
-  const qrCodeUrl = `https://pay.kaspi.kz/payment?service=CHEMICAL_DISPENSING&account=${deviceId}&amount=${amount}`;
+const generateQRCodeUrl = (deviceId, amount, txnId) => {
+  // Формируем URL для QR-кода Kaspi с учетом ID транзакции
+  const qrCodeUrl = `https://pay.kaspi.kz/payment?service=${config.kaspi.bin || 'CHEMICAL_DISPENSING'}&account=${deviceId}&amount=${amount}&txn_id=${txnId}`;
   
-  logger.info(`Generated QR code URL for device ${deviceId}: ${qrCodeUrl}`);
+  logger.info(`Generated QR code URL for device ${deviceId}, amount ${amount}, txn_id ${txnId}: ${qrCodeUrl}`);
   return qrCodeUrl;
 };
 
@@ -72,8 +72,17 @@ const checkPaymentStatus = async (txnId) => {
   }
 };
 
+/**
+ * Создать уникальный ID транзакции для Kaspi
+ * @returns {String} Уникальный ID транзакции
+ */
+const generateTransactionId = () => {
+  return `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
+};
+
 module.exports = {
   sendRequest,
   generateQRCodeUrl,
-  checkPaymentStatus
+  checkPaymentStatus,
+  generateTransactionId
 };

@@ -1,4 +1,4 @@
-// models/transactionModel.js
+// models/transactionModel.js - обновленная версия для прямой оплаты
 const { pool } = require('../config/database');
 const logger = require('../utils/logger');
 
@@ -18,15 +18,18 @@ const transactionModel = {
       
       const [result] = await conn.execute(
         `INSERT INTO transactions 
-         (txn_id, prv_txn_id, device_id, amount, txn_date, status) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
+         (txn_id, prv_txn_id, device_id, tank_number, chemical_name, volume, amount, status, dispensed) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           transaction.txn_id,
           transaction.prv_txn_id,
           transaction.device_id,
+          transaction.tank_number || null,
+          transaction.chemical_name || null,
+          transaction.volume || null,
           transaction.amount,
-          transaction.txn_date,
-          transaction.status
+          transaction.status || 0,
+          transaction.dispensed || false
         ]
       );
       
@@ -98,6 +101,26 @@ const transactionModel = {
       return result.affectedRows > 0;
     } catch (error) {
       logger.error(`Error updating transaction status: ${error.message}`);
+      throw error;
+    }
+  },
+  
+  /**
+   * Отметить транзакцию как обработанную (дозирование выполнено)
+   * @param {Number} id - ID транзакции
+   * @returns {Boolean} Успешно или нет
+   */
+  async markAsDispensed(id) {
+    try {
+      const [result] = await pool.execute(
+        'UPDATE transactions SET dispensed = TRUE WHERE id = ?',
+        [id]
+      );
+      
+      logger.info(`Transaction marked as dispensed: ID ${id}`);
+      return result.affectedRows > 0;
+    } catch (error) {
+      logger.error(`Error marking transaction as dispensed: ${error.message}`);
       throw error;
     }
   }

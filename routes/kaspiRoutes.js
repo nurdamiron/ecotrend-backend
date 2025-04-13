@@ -1,4 +1,4 @@
-// routes/kaspiRoutes.js
+// routes/kaspiRoutes.js - обновленный маршрутизатор для прямой оплаты
 const express = require('express');
 const router = express.Router();
 const kaspiController = require('../controllers/kaspiController');
@@ -29,7 +29,7 @@ const { validateKaspiIP } = require('../middleware/auth');
  *         required: true
  *         schema:
  *           type: string
- *         description: Сумма платежа (фиктивное значение для запроса check)
+ *         description: Сумма платежа
  *     responses:
  *       200:
  *         description: Ответ на запрос проверки
@@ -142,26 +142,19 @@ router.get('/pay', validateKaspiIP, kaspiController.processPayment);
  */
 router.get('/status', kaspiController.getKaspiStatus);
 
-
 /**
  * @swagger
- * /api/kaspi/generate-qr/{deviceId}/{amount}:
+ * /api/kaspi/generate-qr/{sessionId}:
  *   get:
  *     summary: Генерация QR-кода для оплаты через Kaspi
  *     tags: [Kaspi]
  *     parameters:
  *       - in: path
- *         name: deviceId
+ *         name: sessionId
  *         required: true
  *         schema:
  *           type: string
- *         description: ID устройства
- *       - in: path
- *         name: amount
- *         required: true
- *         schema:
- *           type: number
- *         description: Сумма платежа
+ *         description: ID сессии дозирования
  *     responses:
  *       200:
  *         description: QR-код успешно сгенерирован
@@ -176,6 +169,8 @@ router.get('/status', kaspiController.getKaspiStatus);
  *                 data:
  *                   type: object
  *                   properties:
+ *                     session_id:
+ *                       type: string
  *                     device_id:
  *                       type: string
  *                     amount:
@@ -185,10 +180,9 @@ router.get('/status', kaspiController.getKaspiStatus);
  *                     qr_code_url:
  *                       type: string
  */
-router.get('/generate-qr/:deviceId/:amount', kaspiController.generateQR);
+router.get('/generate-qr/:sessionId', kaspiController.generateQR);
 
-
-// Проверьте, что этот маршрут существует и правильно настроен
+// Обработка запросов по устаревшему формату
 router.get('/payment', (req, res) => {
     const { command } = req.query;
     if (command === 'check') {
@@ -202,7 +196,5 @@ router.get('/payment', (req, res) => {
         });
     }
 });
-
-
 
 module.exports = router;

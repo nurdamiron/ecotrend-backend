@@ -1,20 +1,19 @@
-// server.js - Updated with improved error handling and health checks
+// server.js - обновленная версия для системы прямой оплаты
 const express = require('express');
 const morgan = require('morgan');
 const setupCors = require('./middleware/cors');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 const config = require('./config/config');
-const helmet = require('helmet'); // Additional security
+const helmet = require('helmet');
 
-// Import routes
+// Импорт маршрутов
 const deviceRoutes = require('./routes/deviceRoutes');
-const balanceRoutes = require('./routes/balanceRoutes');
-const kaspiRoutes = require('./routes/kaspiRoutes');
-const dispensingRoutes = require('./routes/dispensingRoutes');
-const healthRoutes = require('./routes/healthRoutes'); // New health routes
+const dispensingRoutes = require('./routes/dispensingRoutes'); // Обновленные маршруты
+const kaspiRoutes = require('./routes/kaspiRoutes'); // Обновленные маршруты
+const healthRoutes = require('./routes/healthRoutes');
 
-// Initialize Firebase with improved error handling
+// Инициализация Firebase с улучшенной обработкой ошибок
 const firebase = require('./utils/firebase');
 try {
   const firebaseInitialized = firebase.initializeFirebase();
@@ -28,57 +27,56 @@ try {
   logger.warn('Continuing without Firebase. Some functionality will be limited.');
 }
 
-// Create Express app
+// Создание приложения Express
 const app = express();
 
-// Enhance security with helmet
+// Улучшение безопасности с помощью helmet
 app.use(helmet({
-  contentSecurityPolicy: false, // Disable CSP for Swagger UI
-  crossOriginEmbedderPolicy: false // Allow loading resources from other origins
+  contentSecurityPolicy: false, // Отключение CSP для Swagger UI
+  crossOriginEmbedderPolicy: false // Разрешить загрузку ресурсов из других источников
 }));
 
-// Set up CORS
+// Настройка CORS
 app.use(setupCors());
 
-// Request logging
+// Логирование запросов
 app.use(morgan('combined', {
   skip: (req, res) => {
-    // Skip logging health check endpoints to reduce noise
+    // Пропускаем логирование эндпоинтов проверки состояния для уменьшения шума
     return req.path.startsWith('/api/health/liveness') || 
            req.path.startsWith('/api/health/readiness');
   }
 }));
 
-// Parse JSON and URL-encoded data
+// Парсинг JSON и URL-encoded данных
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Add request ID middleware for better tracking
+// Добавление ID запроса для лучшего отслеживания
 app.use((req, res, next) => {
   req.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   res.setHeader('X-Request-ID', req.id);
   next();
 });
 
-// Register routes
+// Регистрация маршрутов
 app.use('/api/devices', deviceRoutes);
-app.use('/api/balance', balanceRoutes);
-app.use('/api/kaspi', kaspiRoutes);
-app.use('/api/dispensing', dispensingRoutes);
-app.use('/api/health', healthRoutes); // Add health routes
+app.use('/api/dispensing', dispensingRoutes); // Обновленные маршруты для дозирования
+app.use('/api/kaspi', kaspiRoutes); // Обновленные маршруты для Kaspi
+app.use('/api/health', healthRoutes);
 
-// API root route
+// Корневой маршрут API
 app.get('/api', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Welcome to EcoTrend API',
+    message: 'Welcome to EcoTrend API (Direct Payment Model)',
     version: config.app.version,
     environment: config.app.env,
     timestamp: new Date().toISOString()
   });
 });
 
-// Add swagger documentation if available
+// Добавление документации Swagger, если доступна
 try {
   const swagger = require('./swagger');
   app.use('/api/docs', swagger.serve, swagger.setup);
@@ -87,49 +85,45 @@ try {
   logger.warn(`Swagger documentation not available: ${error.message}`);
 }
 
-// Handle unknown routes
+// Обработка неизвестных маршрутов
 app.use((req, res, next) => {
   const error = new Error(`Route not found: ${req.method} ${req.originalUrl}`);
   error.statusCode = 404;
   next(error);
 });
 
-// Error handling middleware
+// Middleware обработки ошибок
 app.use(errorHandler);
 
-// Graceful shutdown handling
+// Обработка завершения работы
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
-  // Close server, database connections, etc.
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   logger.info('SIGINT received, shutting down gracefully');
-  // Close server, database connections, etc.
   process.exit(0);
 });
 
-// Unhandled promise rejections
+// Обработка необработанных ошибок
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Promise Rejection', { reason });
-  // Don't exit, just log for now
 });
 
-// Uncaught exceptions
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught Exception', { error });
-  // Give time for logging to complete, then exit
   setTimeout(() => {
     process.exit(1);
   }, 1000);
 });
 
-// Start server
+// Запуск сервера
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
   logger.info(`Server is running on port ${PORT}`);
   logger.info(`Environment: ${config.app.env}`);
+  logger.info(`Payment model: Direct payment (without balance)`);
 });
 
 module.exports = app;

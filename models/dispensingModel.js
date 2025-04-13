@@ -1,9 +1,9 @@
-// models/dispensingModel.js
+// models/dispensingModel.js - обновленная версия для прямой оплаты
 const { pool } = require('../config/database');
 const logger = require('../utils/logger');
 
 /**
- * Модель для работы с операциями дозирования
+ * Модель для операций дозирования
  */
 const dispensingModel = {
   /**
@@ -15,19 +15,18 @@ const dispensingModel = {
     try {
       const [result] = await pool.execute(
         `INSERT INTO dispensing_operations 
-         (device_id, transaction_id, tank_number, chemical_name, price_per_liter, 
-          volume, total_cost, expiration_date, batch_number, receipt_number) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (transaction_id, device_id, tank_number, chemical_name, price_per_liter, 
+          volume, total_cost, status, receipt_number) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          operation.device_id,
           operation.transaction_id,
+          operation.device_id,
           operation.tank_number,
           operation.chemical_name,
           operation.price_per_liter,
           operation.volume,
           operation.total_cost,
-          operation.expiration_date || null,
-          operation.batch_number || null,
+          operation.status || 'completed',
           operation.receipt_number || null
         ]
       );
@@ -81,7 +80,19 @@ const dispensingModel = {
   },
 
   /**
-   * Создать чек для операции дозирования
+   * Рассчитать стоимость дозирования
+   * @param {Number} pricePerLiter - Цена за литр
+   * @param {Number} volumeInMl - Объем в миллилитрах
+   * @returns {Number} Общая стоимость
+   */
+  calculateCost(pricePerLiter, volumeInMl) {
+    // Перевод миллилитров в литры и расчет стоимости
+    const volumeInLiters = volumeInMl / 1000;
+    return parseFloat((pricePerLiter * volumeInLiters).toFixed(2));
+  },
+
+  /**
+   * Обновить номер чека
    * @param {Number} operationId - ID операции
    * @param {String} receiptNumber - Номер чека
    * @returns {Boolean} Успешно или нет
