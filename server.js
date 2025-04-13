@@ -12,6 +12,7 @@ const deviceRoutes = require('./routes/deviceRoutes');
 const dispensingRoutes = require('./routes/dispensingRoutes'); // Обновленные маршруты
 const kaspiRoutes = require('./routes/kaspiRoutes'); // Обновленные маршруты
 const healthRoutes = require('./routes/healthRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 // Инициализация Firebase с улучшенной обработкой ошибок
 const firebase = require('./utils/firebase');
@@ -64,6 +65,7 @@ app.use('/api/devices', deviceRoutes);
 app.use('/api/dispensing', dispensingRoutes); // Обновленные маршруты для дозирования
 app.use('/api/kaspi', kaspiRoutes); // Обновленные маршруты для Kaspi
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 
 // Корневой маршрут API
 app.get('/api', (req, res) => {
