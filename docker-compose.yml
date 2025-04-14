@@ -5,7 +5,7 @@ services:
     container_name: kaspi-api
     restart: always
     ports:
-      - "3000:3000"
+      - "5000:5000"
     environment:
       - NODE_ENV=production
       - DB_HOST=${DB_HOST}
