@@ -4,10 +4,10 @@ const logger = require('../utils/logger');
 
 // Параметры подключения к MySQL
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || 'biz360.czwiyugwum02.eu-north-1.rds.amazonaws.com',
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
+  password: process.env.DB_PASSWORD || 'nurda0101',
   database: process.env.DB_NAME || 'ecotrend',
   waitForConnections: true,
   connectionLimit: 10,
