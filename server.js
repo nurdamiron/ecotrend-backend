@@ -121,7 +121,7 @@ process.on('uncaughtException', (error) => {
 });
 
 // Запуск сервера
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 const server = app.listen(PORT, () => {
   logger.info(`Server is running on port ${PORT}`);
   logger.info(`Environment: ${config.app.env}`);

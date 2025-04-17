@@ -301,3 +301,39 @@
 {"level":"info","message":"Попытка входа для пользователя: admin@gmail.com","service":"ecotrend-backend","timestamp":"2025-04-14 14:06:20"}
 {"level":"warn","message":"Неудачный вход: неверный пароль для admin@gmail.com","service":"ecotrend-backend","timestamp":"2025-04-14 14:06:21"}
 {"level":"info","message":"SIGINT received, shutting down gracefully","service":"ecotrend-backend","timestamp":"2025-04-14 14:06:45"}
+{"level":"info","message":"Attempting to initialize Firebase...","service":"ecotrend-backend","timestamp":"2025-04-18 00:33:40"}
+{"level":"error","message":"Firebase initialization error: Failed to parse private key: Error: Invalid PEM formatted message.","service":"ecotrend-backend","timestamp":"2025-04-18 00:33:40"}
+{"level":"warn","message":"Firebase initialization skipped or failed. Some functionality may be limited.","service":"ecotrend-backend","timestamp":"2025-04-18 00:33:40"}
+{"level":"info","message":"Swagger documentation initialized at /api/docs","service":"ecotrend-backend","timestamp":"2025-04-18 00:33:41"}
+{"error":{"address":"::","code":"EADDRINUSE","errno":-48,"port":5000,"syscall":"listen"},"level":"error","message":"Uncaught Exception","service":"ecotrend-backend","timestamp":"2025-04-18 00:33:41"}
+{"level":"info","message":"Attempting to initialize Firebase...","service":"ecotrend-backend","timestamp":"2025-04-18 00:34:43"}
+{"level":"error","message":"Firebase initialization error: Failed to parse private key: Error: Invalid PEM formatted message.","service":"ecotrend-backend","timestamp":"2025-04-18 00:34:44"}
+{"level":"warn","message":"Firebase initialization skipped or failed. Some functionality may be limited.","service":"ecotrend-backend","timestamp":"2025-04-18 00:34:44"}
+{"level":"info","message":"Swagger documentation initialized at /api/docs","service":"ecotrend-backend","timestamp":"2025-04-18 00:34:44"}
+{"error":{"address":"::","code":"EADDRINUSE","errno":-48,"port":5000,"syscall":"listen"},"level":"error","message":"Uncaught Exception","service":"ecotrend-backend","timestamp":"2025-04-18 00:34:44"}
+{"level":"info","message":"Attempting to initialize Firebase...","service":"ecotrend-backend","timestamp":"2025-04-18 00:35:30"}
+{"level":"error","message":"Firebase initialization error: Failed to parse private key: Error: Invalid PEM formatted message.","service":"ecotrend-backend","timestamp":"2025-04-18 00:35:30"}
+{"level":"warn","message":"Firebase initialization skipped or failed. Some functionality may be limited.","service":"ecotrend-backend","timestamp":"2025-04-18 00:35:30"}
+{"level":"info","message":"Swagger documentation initialized at /api/docs","service":"ecotrend-backend","timestamp":"2025-04-18 00:35:30"}
+{"level":"info","message":"Server is running on port 4000","service":"ecotrend-backend","timestamp":"2025-04-18 00:35:30"}
+{"level":"info","message":"Environment: development","service":"ecotrend-backend","timestamp":"2025-04-18 00:35:30"}
+{"level":"info","message":"Payment model: Direct payment (without balance)","service":"ecotrend-backend","timestamp":"2025-04-18 00:35:30"}
+{"level":"info","message":"Попытка входа для пользователя: admin@gmail.com","service":"ecotrend-backend","timestamp":"2025-04-18 00:36:42"}
+{"level":"info","message":"Get all devices request","service":"ecotrend-backend","timestamp":"2025-04-18 00:36:53"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:36:54"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:36:54"}
+{"level":"info","message":"Get all devices request","service":"ecotrend-backend","timestamp":"2025-04-18 00:36:54"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:36:54"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:36:54"}
+{"level":"info","message":"Get all devices request","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:05"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:05"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:05"}
+{"level":"info","message":"Get all devices request","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:05"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:05"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:05"}
+{"level":"info","message":"Get all devices request","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:15"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:15"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:15"}
+{"level":"info","message":"Get all devices request","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:15"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:15"}
+{"level":"error","message":"Error getting all devices: Incorrect arguments to mysqld_stmt_execute","service":"ecotrend-backend","timestamp":"2025-04-18 00:37:15"}

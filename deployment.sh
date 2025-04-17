@@ -19,8 +19,8 @@ check_and_handle_ports() {
   log_message "Checking for port conflicts..."
   
   # Port check using netstat
-  local ports_to_check=("443:443" "80:80" "3306:3306" "5000:5000")
-  local port_mapping=("443:8443" "80:8080" "3306:3307" "5000:5001")
+  local ports_to_check=("443:443" "80:80" "3306:3306" "4000:4000")
+  local port_mapping=("443:8443" "80:8080" "3306:3307" "4000:4001")
   local need_update=false
   
   for i in "${!ports_to_check[@]}"; do
@@ -190,7 +190,7 @@ deploy() {
 ## Продакшн
 - 8080: HTTP (nginx → контейнер 80)
 - 8443: HTTPS (nginx → контейнер 443)
-- 5000: API сервер (Node.js)
+- 4000: API сервер (Node.js)
 - 3306/3307: MySQL 
 
 ## Тестирование

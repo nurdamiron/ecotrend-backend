@@ -53,7 +53,7 @@ nano .env
 
 ```
 # Порт сервера
-PORT=5000
+PORT=4000
 
 # Настройки базы данных
 DB_HOST=biz360.czwiyugwum02.eu-north-1.rds.amazonaws.com
@@ -117,7 +117,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/pay.ecotrend.kz/privkey.pem;
 
     location / {
-        proxy_pass http://api:5000;
+        proxy_pass http://api:4000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
